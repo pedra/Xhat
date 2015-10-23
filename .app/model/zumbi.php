@@ -36,7 +36,8 @@ class Zumbi {
                                 groups.PAR,
                                 groups.NAME,
                                 groups.ABOUT,
-                                (SELECT COUNT(ID) FROM messages WHERE TOGROUP = GID AND ID > LASTMSG) MSG
+                                (SELECT COUNT(ID) FROM messages WHERE TOGROUP = GID AND ID > LASTMSG) MSG,
+                                (SELECT COUNT(ID) FROM messages WHERE TOGROUP = GID) TOTAL
                         FROM user_group, users, groups
                         WHERE user_group.IDUSER = :user
                         AND   users.ID = user_group.IDUSER
@@ -56,6 +57,7 @@ class Zumbi {
             $o[$id]['title'] = $col->ABOUT;
             $o[$id]['name'] = $col->NAME;
             $o[$id]['msg'] = 0 + $col->MSG;
+            $o[$id]['total'] = 0 + $col->TOTAL;
             $o[$id]['last'] = 0 + $col->LASTMSG;
             $o[$id]['par'] = $par;
         }
@@ -106,6 +108,22 @@ class Zumbi {
                         [':lm'=>$col->ID,
                          ':user'=>$user,
                          ':grp'=>$group]);
+        return $o;
+    }
+
+    //get connected userlist
+    function getUserList(){
+        Q::db()->query('SELECT * FROM users');
+
+        $rs = Q::db()->result();
+        if($rs === false) return false;
+
+        $o = [];
+        foreach ($rs as $col) {
+            $o[$col->ID]['id'] = $col->ID;
+            $o[$col->ID]['name'] = $col->NAME;
+            $o[$col->ID]['last'] = $col->LAST;
+        }
         return $o;
     }
 

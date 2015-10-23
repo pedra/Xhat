@@ -3,13 +3,11 @@
 namespace Controller;
 use Model;
 use Lib;
-use Lib\Qzumba as Q;
-use Lib\Doc as Doc;
 
 class Login extends Qcontroller {
 
     function main(){
-        $d = new Doc('login');
+        $d = new Lib\Doc('login');
         //$d->sendCache(); // uncomment in production mode
         $d->val('title', 'Zumbi :: Login')
           ->jsvar('key', str_replace(array("\r",
@@ -49,15 +47,23 @@ class Login extends Qcontroller {
             if($user === false) exit(json_encode(['ret'=>'no']));
 
             //create new user (delete if exists)
-            $zumbi = new Model\zumbi();
-            $zumbi->createUser($user->ID, $user->NAME, $this->key);
+            $this->model->createUser($user->ID, $user->NAME, $this->key);
 
             //user x group status
-            $ugs = $zumbi->getUserGroupStatus($user->ID);
+            $ugs = $this->model->getUserGroupStatus($user->ID);
             $user = array_merge(['ID'=>$user->ID, 'NAME'=>$user->NAME], $ugs);
 
             //send
             $this->_sendEncriptedData($user);
         }
+    }
+
+    //get user list
+    function getUserList(){
+        $e = $this->_decodePostData();
+        if($e === false) exit();
+        //Send data
+        $this->_sendEncriptedData($this->model->getUserList());
+
     }
 }

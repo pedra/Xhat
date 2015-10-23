@@ -89,6 +89,7 @@ class Qzumba {
 
         static::$config = $config;
 
+        //not configurables
         static::$root =     ROOT;
         static::$php =      ROOT.'.app/';
         static::$ctrl =     ROOT.'.app/controller/';
@@ -140,7 +141,7 @@ class Qzumba {
             $ctrl = static::$config['router']['default']['ctrl'];
         }
 
-        //include static::$ctrl.strtolower($ctrl).'.php';
+        //instantiate the controller
         $ctrl = 'Controller\\'.$ctrl;
         return new $ctrl(static::rqst());
     }

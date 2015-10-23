@@ -45,6 +45,7 @@ class Db {
 
     private $sql    = null;
     private $result = null;
+    private $rows = 0;
     private $error = [];
 
 
@@ -58,7 +59,15 @@ class Db {
     }
 
     function connect(){
-        if($this->conn == null) $this->conn = new PDO($this->dsn, $this->user, $this->passw);
+        if($this->conn == null)
+            try{
+            $this->conn = new PDO(  $this->dsn,
+                                    $this->user,
+                                    $this->passw);
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+            } catch (PDOException $e){
+            trigger_error('Data base not connected!');
+        }
         if(!is_object($this->conn)) trigger_error('I can not connect to the database',E_USER_ERROR);
         return $this->conn;
     }
@@ -68,8 +77,15 @@ class Db {
         $this->sql = $sql;
         $sth = $this->connect()->prepare($sql);
         $sth->execute($parms);
+        $this->rows = $sth->rowCount();
         $this->error[$sql] = $sth->errorInfo();
-        return $this->result = $sth->fetchAll(PDO::FETCH_CLASS,"Lib\Row");
+
+        if($sth->columnCount() > 0) {
+            return $this->result = $sth->fetchAll(PDO::FETCH_CLASS,"Lib\Row");
+        } else {
+            $this->result = false;
+            return $this->rows;
+        }
     }
 
     //Result Object
@@ -79,7 +95,7 @@ class Db {
     }
     //Limpa os resultados
     function clear(){
-        $this->result = new Result();
+        $this->result = new Lib\Row;
     }
 
     //Pegando erros
@@ -87,6 +103,12 @@ class Db {
         return $this->error;
     }
 
+    //return the number of rows affected by the last DELETE, INSERT or UPDATE
+    function getRows(){
+        return $this->rows;
+    }
+
+    //return last sql string
     function getSql(){
         return $this->sql;
     }

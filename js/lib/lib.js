@@ -320,16 +320,18 @@ var lib = (function(){
     }
 })();
 
-
-//Criando os elementos para exibir MENSAGENS
-_('container').innerHTML = '<div id="msg" class="alert"></div>' + _('container').innerHTML;
-
 //Exibe mensagens
 function _msg(t, tempo){
-    _('msg').innerHTML = t;
-    _('msg').className = 'alert on';
-    if("undefined" === typeof tempo) tempo = 2000;
-    setTimeout(function(){_('msg').className = 'alert';}, tempo);
+    tempo = "number" == typeof tempo ? tempo : 2000;
+
+    var id = 'msg'+_passw.gen(10, true);
+    var m = document.createElement('DIV');
+    m.id = id;
+    m.innerHTML = t;
+    m.className = 'alert on';
+    document.body.appendChild(m);
+
+    setTimeout(function(){_(id).outerHTML = null}, tempo);
 }
 
 function _(e) {
@@ -348,7 +350,7 @@ function _formatTxt(txt){
     txt = _gformat(txt, "-", Array("<s>", "</s>"));
     return _gformat(txt, "_", Array("<i>", "</i>"));
 }
-function _gformat(txt, searc, subst) {
+function _gformat(txt, search, subst) {
 
     var init = -1;
     var fim = 0;
@@ -356,9 +358,9 @@ function _gformat(txt, searc, subst) {
     var result = '';
 
     for (var i = 0; i < txt.length; i++) {
-        if (txt[i] === searc && init === -1 && fim === 0)
+        if (txt[i] === search && init === -1 && fim === 0)
             init = i;
-        if (txt[i] === searc && init !== -1 && init < i) {
+        if (txt[i] === search && init !== -1 && init < i) {
             fim = i;
             var temp = subst[0] + txt.substr((1 + init), (fim - init) - 1) + subst[1];
             result += txt.substr(cursor, (init - cursor)) + temp;
@@ -381,4 +383,40 @@ function _eclick(i){
     );
     i.dispatchEvent(e);
     i.focus();
+}
+
+/** Gerador de CHAVE (senha)
+ * To generate: var pass = _passw.gen(w); (w = width [integer > 0]);
+ * To check:    _('text').onkeypress = function(e) { return _passw.check(String.fromCharCode(e.charCode)));}
+ */
+
+var _passw = {
+    seq: '#$*%&!?@_+-=:.<>/({[]})0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+    alfa: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    gen: function (w, num){
+        o = '';
+        k = "undefined" == typeof num || num === false ? this.seq : this.alfa;
+        for(var i = 0; i < w; i++){
+            o += k[Math.floor(Math.random()*k.length)];
+        }
+        return o;
+    },
+    check: function (v){
+        o = false;
+        for(var i = 0; i < this.seq.length; i++){
+            if(this.seq[i] == v){
+                o = true;
+                break;
+            }
+        }
+        return o;
+    }
+}
+
+/* Validate e-mail
+ * use: _isEmail('contato@mail.com') || alert('Invalid email!');
+ */
+function _isEmail(e){
+    var re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    return re.test(e);
 }

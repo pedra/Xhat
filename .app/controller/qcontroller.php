@@ -11,13 +11,16 @@ abstract class Qcontroller {
 
     public $model = null;
     public $key = null;
+    public $params = [];
 
     /** Abstratic Controller constructor
      *  -- Bypass it in your controller
      */
 	function __construct($rqst){
-        //EStancia Model\Zumbi para n o Objeto
+        //Estancia Model\Zumbi para n o Objeto
         $this->model = new Model\Zumbi;
+        //save params
+        $this->params = $rqst;
 
 		if(isset($rqst[1]) && method_exists($this, $rqst[1])){
 			return $this->{$rqst[1]}($rqst);

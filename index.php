@@ -16,7 +16,7 @@ include ROOT.'.app/lib/functions.php';
 set_error_handler("errorHandler");
 set_exception_handler('exceptionHandler');
 
-// AUTOLOAD
+// Autoload
 set_include_path(ROOT.PATH_SEPARATOR.get_include_path());
 spl_autoload_register(function($class) {
     $class = ROOT.'.app/' . str_replace('\\', '/', trim(strtolower($class), '\\')) . '.php';
@@ -24,17 +24,14 @@ spl_autoload_register(function($class) {
 });
 
 // Composer
-//include QAPP.'vendor/autoloader.php';
+//include ROOT.'.app/vendor/autoloader.php';
 
 // Mount the Q static dock
 class_alias('Lib\Qzumba', 'Lib\Q');
 Lib\Q::mount($config);
 
-// Inserting Access data [optional in developer mode]
-Lib\Q::model('access', new Model\Access)->userAccess();
-
-// Install DataBase
-//$result = Lib\Q::db()->query(file_get_contents(ROOT.'.app/config/install.sql'));
+// Inserting Access data [optional - developer mode only]
+(new Model\Access)->userAccess();
 
 // Router to controller
 Lib\Q::runController();

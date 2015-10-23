@@ -19,9 +19,7 @@ $config = [
                 ]
             ],
     'router'=> ['default'       =>['ctrl'=>'login',     'method'=>'get'],
-                'u'             =>['ctrl'=>'user',      'method'=>'get'],
                 'msg'           =>['ctrl'=>'msg',       'method'=>'post'],
-                'e'             =>['ctrl'=>'edit',      'method'=>'get'],
                 'sendmail'      =>['ctrl'=>'sendmail',  'method'=>'post'],
                 'login'         =>['ctrl'=>'login',     'method'=>'post'],
                 'upfile'        =>['ctrl'=>'upfile',    'method'=>'post']

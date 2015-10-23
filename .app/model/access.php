@@ -6,8 +6,6 @@ use Lib\Q;
 
 class Access {
 
-
-
     function userAccess(){
         // Pegando dados de ACESSO do cliente
         Q::db()->query('INSERT INTO access (REQUEST,METHOD,REMOTE,AGENT,ACCEPT,ENCODING,LANGUAGE,IDATE)

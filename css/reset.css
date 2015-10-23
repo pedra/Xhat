@@ -102,8 +102,8 @@ body {font-family: "Open Sans", sans-serif;}
 .container, .topbar, .footer {min-width: 360px; width: 96%; max-width: 430px; padding: 10px 0px; margin: 0 auto; border:none;}
 .container {z-index: 2;}
 
-#msg.alert {position: absolute; opacity:0; transition: .6s; background:#fff6bf; padding:10px 20px; color:#514721;border-color:#ffd324; min-width: 200px; box-shadow: 0 10px 30px #999; margin-top:20%; z-index: 3000; display:none;}
-#msg.on {opacity:1; display:block;}
+div.alert {position: absolute; top:0; opacity:0; transition: .6s; background:#fff6bf; padding:10px 20px; color:#514721;border-color:#ffd324; min-width: 200px; box-shadow: 0 10px 30px #000; margin:30% 0 0 5%; z-index: 3000; display:none;}
+div.on {opacity:1; display:block;}
 
 .footer {clear:both; border-top:5px solid #CC9;}
 .social {float: right; padding: 0;}

@@ -1,0 +1,28 @@
+body {color:#DDD; font-weight: 100; background: #996; font-family: Helvetica, serif;}
+b {font-weight: 800;}
+p {margin:15px 0;}
+h1 {display:block; margin:0;}
+h2 {font-size: 2.5em;}
+h3 {font-size: 1.3em;}
+h1, h2, h3, h4, h5, h6 {color:#000;}
+label{color:#444; padding:0; display:block; margin:20px 0 0 0; font-size: .9em;}
+table{width: auto;}
+th {font-weight: 100; color:#999;}
+a {color:#DEF;}
+a:hover {color:#FFF;}
+
+blockquote {font-size: 1.5em; color:#995;}
+blockquote::before{content: '*'; font-size: 7em; float:left; color:#EEC; margin:-50px 0 -70px -50px;}
+img { width: 100%; float: left; margin: 10px 0;}
+
+.footer {position: absolute; display:none;}
+
+input,
+button,
+select { padding: 8px 10px; font-size: 1.2em; margin:0; vertical-align: top; background-image: linear-gradient(to top, #EEE, #FFF);}
+button { padding: 8px 14px; border:1px solid #BBB; cursor: pointer;}
+button:hover, button:active, button.active {background-image: linear-gradient(to top, #996, #CC9); color:#FFF;}
+input[type=checkbox] {width: 20px; vertical-align: middle;}
+
+.adm {margin:10px 0;}
+.adm button {margin-top:30px;}

@@ -1,7 +1,8 @@
 
 
 function startWs(){
-    FILE.set.password(USERKEY);
+    FILE.set.password(USER.key);
+    AES.size(256);
 
     if (WS === null) {
 
@@ -9,32 +10,35 @@ function startWs(){
         WS = new WebSocket(wsUri);
 
         WS.onopen = function() {
-            var user = AES.enc(USERNAME, USERKEY);
-            WS.send(JSON.stringify({type:'init',message:'',name: USERNAME,channel: USERCHANNEL}));
-            SOUND.play('final');
+            WS.send(JSON.stringify({msg:AES.enc(JSON.stringify({type:'init',message:'', channel:1}), USER.key), id:USER.id}));
+            //SOUND.play('final');
         };
 
         WS.onmessage = function(e) {
-            var data = JSON.parse(e.data);
-            Message.show(data);
+            var data = JSON.parse(AES.dec(e.data, USER.key));
+            MSG.show(data);
         };
 
         WS.onerror = function(e) {
             var d = 'undefined' === typeof e.data ? 'undefined!' : e.data;
             _msg('--- Error: ' + d + ' ---');
-            if(WS === null || WS.readyState !== WS.OPEN) exit();
+            if(WS === null || WS.readyState !== WS.OPEN) {
+                console.log('ERROR');
+                exit();
+            }
         };
 
         WS.onclose = function() {
+            console.log('CLOSE');
             exit();
         };
+
     } else {
-        var user = AES.enc(USERNAME, USERKEY);
-        WS.send(JSON.stringify({type:'sinc', message:'', name: USERNAME, channel: USERCHANNEL}));
+        WS.send(JSON.stringify({msg:AES.enc(JSON.stringify({type:'sync',message:'', channel:0}), USER.key), id:USER.id}));
     }
 };
 
-function sendMsg(e, type){
+function sendMsg(e, type){ console.log(e); console.log(USER.channel)
 
     if(WS === null || WS.readyState !== WS.OPEN) exit();
 
@@ -51,11 +55,9 @@ function sendMsg(e, type){
         return _msg('Mensagem muito LONGA! Não posso enviar.');
     }
 
-    AES.size(256);
-    txt = AES.enc(JSON.stringify({message: txt, name: USERNAME}), USERKEY);
-
     //Send message
-    WS.send(JSON.stringify({type: type, message: txt, channel: USERCHANNEL, id: USERID}));
+    AES.size(256); console.log(JSON.stringify({msg:AES.enc(JSON.stringify({type:type,message:txt, channel:USER.channel}), USER.key), id:USER.id}));
+    WS.send(JSON.stringify({msg:AES.enc(JSON.stringify({type:type,message:txt, channel:USER.channel}), USER.key), id:USER.id}));
 
     //Clear target
     _('message').value = '';
@@ -65,10 +67,12 @@ function sendMsg(e, type){
 
 
 function exit(){
-    WS.send(JSON.stringify({type: 'out', message: '', channel: USERCHANNEL}));
+    AES.size(256);
+    WS.send(JSON.stringify({msg:AES.enc(JSON.stringify({type:'out',message:'', channel:USER.channel}), USER.key), id:USER.id}));
     SOUND.play('final');
     WS.close();
     setTimeout(function() {
-        document.location.href = document.location.href;
+        //document.location.href = document.location.href;
+        console.log('REINICIE')
     }, 400);
 }

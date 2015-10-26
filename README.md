@@ -66,9 +66,9 @@ Security Chat
 
 [rodar]
 
-	Em um terminal inicie o relay: php [path_to_zumbi]/.app/relay.php -s
+	Em um terminal inicie o relay: php [path_to_Xhat]/.app/relay.php -s
 
-	Acesse: http://localhost/zumbi  [ou o endereço de acesso ao "zumbi"]
+	Acesse: http://localhost/xhat [ou o endereço de acesso ao "xhat"]
 
 	A senha é sempre "1234567890" e uma lista de e-mails para o campo "login" pode ser vista na própria página.
 

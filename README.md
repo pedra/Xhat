@@ -1,9 +1,11 @@
 # Xhat
 Security Chat
 
-## em desenvolvimento - não funcional.
+## Version 1 - em desenvolvimento - não funcional.
 
-## version 2 - funciona em parte
+## Version 2 - funciona em parte
+
+## Version 3 - funciona quase tudo
 
 
 

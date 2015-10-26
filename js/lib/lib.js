@@ -331,7 +331,7 @@ function _msg(t, tempo){
     m.className = 'alert on';
     document.body.appendChild(m);
 
-    setTimeout(function(){_(id).outerHTML = null}, tempo);
+    setTimeout(function(){_(id).outerHTML = ''}, tempo);
 }
 
 function _(e) {
@@ -339,6 +339,10 @@ function _(e) {
 }
 function _qa(e){
     return document.querySelectorAll(e);
+}
+
+function _qs(e){
+    return document.querySelector(e);
 }
 
 /* _GFORMAT */

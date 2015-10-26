@@ -13,12 +13,12 @@ var AJAX,
 
 window.onload = function(){
 
+    window.onresize = function (e){painel('chat')}
+
     //Iniciando LIBRARYS
     SOUND = new lib.sound();
     FILE = new lib.upload();
     FILE.set.statusElement(_('fileList'));
-
-    CHAT = _('chat');
 
     //TESTE ONLY --- BEGIN
     _('help').onclick = function (e){
@@ -27,11 +27,11 @@ window.onload = function(){
             _('password').value = '1234567890';
         }
     }
+    //TESTE ONLY --- END
 
     //Chave de segurança
-    setTimeout(function(){_('irsa').value = _passw.gen(40); _('irsa').disabled = false; _('irsa').placeholder="digite uma chave válida"}, 500);
+    _('irsa').value = _passw.gen(40);
     _('irsa').onkeypress = function (e) {return _passw.check(String.fromCharCode(e.charCode))}
-    _('newkey').onclick = function (){_('irsa').value = _passw.gen(40);}
 
     //Botão de "ENTRADA/LOGIN"
     _('go').onclick = function(){
@@ -45,134 +45,158 @@ window.onload = function(){
 
         //convertendo...
         vk = RSA.encrypt(js, RSA.getPublicKey(key));
-        _msg('Enviando dados criptgrafados ao servidor.<br>Aguarde...');
 
         AJAX = new lib.ajax();
-        AJAX.set.url(URL+'login/checkUser');
+        AJAX.set.url(URL+'user/checkUser');
         AJAX.set.data({key:vk});
-        AJAX.set.complete(function(data){ console.log(data)
+        AJAX.set.complete(function(data){
             var e = JSON.parse(AES.dec(data, USER.key));
 
             if(e) {
                 USER.id = e.ID;
                 USER.name = e.NAME;
 
-                _('groups').innerHTML += mountList(e.li);
+                //novo conteúdo...
+                _('container').innerHTML =
+                '<div id="xhat" class="xhat">'
+                +'<div id="chat" class="painels"></div>'
+                +'</div>'
+                +'<div id="users" class="list painels"><h2>Usuários</h2><ul></ul></div>'
+                +'<div id="groups" class="list painels"><h2>Grupos</h2><ul></ul></div>'
+                +'<textarea id="message" placeholder="your message here!"></textarea>'
+                +'<div id="control" class="control">'
+                +'<button id="btmsg">chat</button>'
+                +'<button id="btfile">file</button>'
+                +'<button id="btuser">users</button>'
+                +'<button id="btgroup" class="medio">groups</button>'
+                +'<button id="btout">out</button>'
+                +'<button id="btconfig">config</button>'
+                +'</div>';
+
+                CHAT = _('chat');
+
+                _('btout').onclick = function(){
+                    document.location = document.location;
+                };
+
+                _('btmsg').onclick = function(){
+                    painel('message');
+                };
+
+                _('btgroup').onclick = function(){
+                    getUserGroupStatus();
+                    painel('group');
+                };
+
+                _('btuser').onclick = function(){
+                    getUserList();
+                    painel('users');
+                };
+
+                _('message').onkeydown = function(e) {
+                    if (e.which === 9) {
+                        e.preventDefault();
+                        e.target.value += '    ';
+                    }
+                };
+
+                _('message').onkeyup = function(e) {
+                    if(e.which == 13 && e.target.value.trim().length > 0) {
+                        if (e.target.value.trim() === '' || e.shiftKey) return false;
+                        else sendMsg(e.target.value);
+                    }
+                };
+
+                //carregando  listagem de usuários
+                setTimeout(function(){
+                    getUserList();
+                    painel('user');
+                }, 200);
+
+                //carregando listagem de grupos
+                _qs('#groups UL').innerHTML = mountList(e.li);
+                painel('group');
 
                 //Start Web Socket
                 startWs();
 
-                //Destroy login
-                _('formLogin').outerHTML = null;
-                _('zumbi').style.display = 'block';
-
             } else {
-                _msg('<b>Falhou!</b><br>Verifique os dados informados<br>ou recarregue a página e faça nova tentativa.', 5000);
+                _msg('<b>Falhou!</b><br>Verifique os dados informados<br>ou recarregue a página e faça nova tentativa.', 4000);
+                SOUND.play('error');
             }
         })
         AJAX.send();
     }
-
-    _('goback').onclick = function(){ goback();}
-    _('gonext').onclick = function(){ gonext();}
-
-    _('file').onclick = function(){
-        _('page3').scrollTop = _('page3').scrollHeight;
-        console.log(_('page3').scrollTop + ' - '+ _('page3').scrollHeight)
-    }
-
-    //MESSAGE LISTERN ----------------------------------------------------------
-    _('message').onkeydown = function(e) {
-        if (e.which === 9) {
-            e.preventDefault();
-            e.target.value += '    ';
-        }
-    };
-
-    _('message').onkeyup = function(e) {
-        if(e.which == 13 && e.target.value.trim().length > 0) {
-            if (e.target.value.trim() === '' || e.shiftKey) return false;
-            else sendMsg(e.target.value);
-        }
-    };
-
-    _('send').onclick = function(){
-        if (_('message').value.trim() === '') return false;
-        else sendMsg(_('message').value);
-    }
-
 }
+
+
 
 var MSG = {
 
-    show: function (data){
-        console.log(data);
-        if(data.type != 'msg') return;
-        formMsg(data);
-        SOUND.play('msgin');
-        setTimeout(function(){_('page3').scrollTop = _('page3').scrollHeight;}, 400)
+    show: function (msg){
+        var d = document.createElement('DIV');
+        d.className = 'msg'+(msg.userid == USER.id ? ' me':'');
+        d.innerHTML = '<img src="'+URL+'img/d'+parseInt(msg.userid.toString().substr(-1))+'.jpg">'
+                      +'<span class="msgdate">'+("undefined" !== typeof msg.date ? msg.date : this.dtime())+' '+'</span>'
+                      +(msg.userid == USER.id ? '<h2>eu</h2>':'<h2>'+msg.name+'</h2>')
+                      +'<div class="msgtxt">'+msg.message.replace(/(  )/g, " &nbsp;")+'</div>'
+                      +'</div>';
+        CHAT.insertBefore(d, null);
+        scroll();
+        return d;
+    },
+
+    dtime: function(){
+        var t = new Date();
+        var d = t.getDay();
+        var m = t.getMonth();
+        var y = t.getFullYear();
+
+        var h = t.getHours();
+        var i = t.getMinutes();
+        var s = t.getSeconds();
+
+        d = d < 10 ? '0'+d : d;
+        m = m < 10 ? '0'+m : m;
+        h = h < 10 ? '0'+h : h;
+        i = i < 10 ? '0'+i : i;
+        s = s < 10 ? '0'+s : s;
+
+        return y+'-'+m+'-'+d+' '+h+':'+i+':'+s;
     }
 }
 
-//formata os dados para mostrar como MESSAGE
-function formMsg(msg){
-    var d = document.createElement('DIV');
-    d.className = 'xmsgc'+(msg.userid == USER.id ? ' me':'');
-    d.innerHTML = (msg.userid == USER.id ? '':'<h2>'+msg.name+'</h2>')
-                    +'<span class="xmsgi"></span><div class="xmsg">'
-                    +(msg.userid == USER.id ? '':'<img src="'+URL+'img/d'+getUserImg(msg.userid)+'.jpg">')
-                    +msg.message.replace(/(  )/g, " &nbsp;")
-                    +'<span>'+("undefined" !== typeof msg.date ? msg.date : dtime())+' '+'</span></div></div>';
-    _('chat').insertBefore(d, null);
-    return d;
-}
 
-
-function getUserImg(number){
-    var s = number.toString().substr(-1);
-    for(var i = 0; i <=9; i++){
-        if(s == i.toString()) return i;
-    }
-    return 0;
-}
-
-function dtime(){
-    var t = new Date();
-    var d = t.getDay();
-    var m = t.getMonth();
-    var y = t.getFullYear();
-
-    var h = t.getHours();
-    var i = t.getMinutes();
-    var s = t.getSeconds();
-
-    d = d < 10 ? '0'+d : d;
-    m = m < 10 ? '0'+m : m;
-    h = h < 10 ? '0'+h : h;
-    i = i < 10 ? '0'+i : i;
-    s = s < 10 ? '0'+s : s;
-
-    return y+'-'+m+'-'+d+' '+h+':'+i+':'+s;
-}
-
-
-function mountList(o){
-    var a = '<ul>';
+function mountList(o, g){
+    var h = ("undefined" == typeof g || g === false) ? false : true;
+    var a = '';
     for(var i in o){
         var n = o[i]['msg'];
         var t = o[i]['total'];
-        var n = n > 0 ? ' (' +(n > 1 ? n+' novas)' : n+' nova)') : '';
-        var t = t > 0 ? ''+(t > 1 ? t+'' : t+''):'';
-        a += '<li id="lst'+i+'" onclick="getMsgGroup('+i+')">'+o[i]['name']+'<span>'+o[i]['title']+'<span class="total">'+t+'</span><span class="novas">'+n+'</span></span></li>';
-        if("undefined" != typeof o[i]['content']) a += mountList(o[i]['content']);
+        var n = n > 0 ? ' - ' +(n > 1 ? n+' novas' : n+' nova') : '';
+        //var t = t > 0 ? (t > 1 ? 't+' mensagens' : t+' mensagem'):'';
+        var t = t > 0 ? '<b>'+t+ '</b> mensage' + (t > 1 ? 'ns' : 'm') : '';
+
+        a += '<li id="lst'+i+'" onclick="listMsgGroup('+i+')" '+(h === false ? 'class="selected"' : '')+'>'
+             +o[i]['name']+'<span class="desc">'
+             +o[i]['title']+'</span><span class="count">'
+             +t+n+'</span></li>';
+
+        if(h === false){ //get messages from first group!
+            h = true;
+            getMsgByGroup(i);
+        }
+
+        if("undefined" != typeof o[i]['content']) a += mountList(o[i]['content'], h);
     }
-    return a + '</ul>';
+    return a;
 }
 
 function mountMsg(o){
-    _('chat').innerHTML = '';
+    CHAT.innerHTML = '';
 
     for(var i in o){
+        if("undefined" === typeof o[i]['type']) continue;
         var msg = {
             type: o[i]['type'],
             message: o[i]['content'],
@@ -181,28 +205,31 @@ function mountMsg(o){
             userid: o[i]['id'],
             date: o[i]['date']
         }
-        formMsg(msg);
+        MSG.show(msg);
     }
-    setTimeout(function(){_('page3').scrollTop = _('page3').scrollHeight;}, 400);
 }
 
-function getMsgGroup(g){
-    AJAX.set.url(URL+'msg/getMsgGroup/');
+function listMsgGroup(g){
+    //marcando a seleção do menu
+    listSelect('lst'+g);
+
+    painel('chat');
+    return getMsgByGroup(g);
+}
+
+function getMsgByGroup(g){
+    //Pegando os dados no servidor
+    AJAX.set.url(URL+'msg/getMsgByGroup/');
     AJAX.set.data({enc:AES.enc(JSON.stringify({group:g}), USER.key), id:USER.id});
     AJAX.set.complete(function(data){
         var e = JSON.parse(AES.dec(data, USER.key));
 
         if(e) mountMsg(e);
         else  {
-            _('chat').innerHTML = '';
-            _msg('Nenhuma mensagem não lida.');
+            CHAT.innerHTML = '';
+            _msg('Nenhuma mensagem!.');
         }
-
-        _('page3').scrollTop = _('page3').scrollHeight;
-
         USER.channel = g;
-        PAGE = 2;
-        gonext()
     })
     AJAX.send();
 }
@@ -213,121 +240,109 @@ function getUserGroupStatus(){
 
     AJAX.set.complete(function(data){
         var e = JSON.parse(AES.dec(data, USER.key));
+        _qs('#groups UL').innerHTML = '';
 
-        if(e) _('groups').innerHTML = mountList(e.li);
-        else _msg('Infelizmente a chave não confere!<br>Tente de novo ou entre em contato com o suporte técnico.');
+        if(e) _qs('#groups UL').innerHTML = mountList(e.li);
+        else {
+            _msg('Chave de criptografia <b>inválida!</b>', 2000);
+            SOUND.play('error');
+            exit();
+        }
     })
     AJAX.send();
 }
 
+/* Remove all class "selected"
+ *      and select element 'id'
+ */
+function listSelect(id){
+    //marcando a seleção do menu
+    var l = _qa('.selected');
+    for(var i = 0; i < l.length; i++){
+        l[i].classList.remove('selected');
+    }
+    _(id).classList.add('selected');
+}
+
 function getMsgUser(u){
+    listSelect('user'+u);
     alert('Mensagem privada para '+u+' ?!')
 }
 
 function getUserList(){
-    AJAX.set.url(URL+'login/getUserList');
+    AJAX.set.url(URL+'user/getUserList');
     AJAX.set.data({enc:AES.enc(JSON.stringify({group:'nada'}), USER.key), id:USER.id});
 
     AJAX.set.complete(function(data){
         var e = JSON.parse(AES.dec(data, USER.key));
 
         if(e) mountUserList(e);
-        else _msg('Infelizmente a chave não confere!<br>Tente de novo ou entre em contato com o suporte técnico.');
+        else {
+            _msg('Chave de criptografia <b>inválida!</b>', 2000);
+            SOUND.play('error');
+            exit();
+        }
     })
     AJAX.send();
 }
 
-function mountUserList(e){
-    var d = '<ul>';
-    for(var i in e){
-        d += '<li id="user'+e[i].id+'" onclick="getMsgUser('+i+')">'+e[i].name+'</li>';
+function mountUserList(u){
+    var d = '';
+    for(var i in u){
+        if(u[i]['type'] !== 'msg') continue;
+        var t = u[i]['total'];
+        var t = t > 0 ? '<b>'+t+ '</b> mensage' + (t > 1 ? 'ns' : 'm') : 'Nenhuma mensagem';
+        d += '<li id="user'+u[i].id+'" onclick="getMsgUser('+i+')">'+u[i].name
+             //+'<span class="desc">+Recente: '+u[i]['last']+'</span>'
+             +'<span class="count">'+t+'.</span></li>';
     }
-    _('userList').innerHTML = d+'</ul>';
+    _qs('#users UL').innerHTML = d;
 }
 
-function goback(){
-    if(PAGE == 2) {
-        _('page1').className = 'page';
-        _('page2').className = 'page tonext';
-
-        _('goback').innerHTML = 'sair';
-        _('gonext').innerHTML = 'grupos';
-
-        PAGE = 1;
-        _('text').innerHTML = 'Usuários';
-        return getUserList();
+function painel(p){
+    if(p == 'message') {
+        var m = _('message');
+        if(m.style.display == 'block') m.style.display = 'none';
+        else m.style.display = 'block';
+        return _('message').focus();
     }
 
-    if(PAGE == 3) {
-        _('page2').className = 'page';
-        _('page3').className = 'page tonext';
+    var w = _('xhat').clientWidth;
 
-        _('goback').innerHTML = 'usuários';
-        _('gonext').innerHTML = 'mensagens';
-
-        PAGE = 2;
-        _('text').innerHTML = 'Grupos';
-        return getUserGroupStatus();
-    }
-
-    if(PAGE == 4) {
-        _('page3').className = 'page';
-        _('page4').className = 'page tonext';
-
-        _('goback').innerHTML = 'grupos';
-        _('gonext').innerHTML = 'arquivos';
-
-        PAGE = 3;
-        _('text').innerHTML = 'Mensagens';
+    if(w >= 850) {
+        _('groups').style.display = 'block';
+        _('users').style.display = 'block';
+        _('chat').style.display = 'block';
         return;
     }
 
-    if(PAGE == 1) document.location = document.location;
-}
+    //Width min: 700 | max: 900
+    if(w >= 600){ //&& w <= 900){
 
-function gonext(){
+        _('chat').style.display = 'block';
+        _('groups').style.display = 'block';
 
-    if(PAGE == 1) {
-        _('page2').className = 'page';
-        _('page1').className = 'page toback';
-
-        _('goback').innerHTML = 'usuários';
-        _('gonext').innerHTML = 'mensagens';
-
-        PAGE = 2;
-        _('text').innerHTML = 'Grupos';
-        return getUserGroupStatus();
-    }
-
-    if(PAGE == 2) {
-        _('page3').className = 'page';
-        _('page2').className = 'page toback';
-
-        _('goback').innerHTML = 'grupos';
-        _('gonext').innerHTML = 'arquivos';
-
-        PAGE = 3;
-        _('text').innerHTML = 'Mensagens';
+        if(p == 'group') {
+            _('groups').style.display = 'block';
+            _('users').style.display = 'none';
+        }
+        if(p == 'users') {
+            _('users').style.display = 'block';
+            _('groups').style.display = 'none';
+        }
         return;
     }
 
-    if(PAGE == 3) {
-        _('page4').className = 'page';
-        _('page3').className = 'page toback';
+    //Other widths
+    _('groups').style.display = 'none';
+    _('chat').style.display = 'none';
+    _('users').style.display = 'none';
 
-        _('goback').innerHTML = 'mensagens';
-        _('gonext').innerHTML = 'sair';
-
-        PAGE = 4;
-        _('text').innerHTML = 'Arquivos';
-        return;
-    }
-
-    if(PAGE == 4) document.location = document.location;
+    if(p == 'group') _('groups').style.display = 'block';
+    if(p == 'chat') _('chat').style.display = 'block';
+    if(p == 'users') _('users').style.display = 'block';
 }
 
-function togglePass(){
-    var  p = _('password');
-    if(p.type == 'password') p.type = 'text';
-    else p.type = 'password';
+function scroll(){
+    setTimeout(function(){_('xhat').scrollTop = _('xhat').scrollHeight}, 400);
 }

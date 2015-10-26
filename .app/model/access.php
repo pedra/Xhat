@@ -18,6 +18,7 @@ class Access {
                              ':enc'=>$_SERVER['HTTP_ACCEPT_ENCODING'],
                              ':lan'=>$_SERVER['HTTP_ACCEPT_LANGUAGE'],
                              ':idate'=>date('Y-m-d H:I:s')]);
+        Q::db()->query('DELETE FROM access WHERE DATE(access.IDATE) <= DATE(DATE(NOW())-30)');
     }
 
 

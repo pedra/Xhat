@@ -1,60 +1,28 @@
-
 <div id="formLogin" class="login">
-    <h1>Login</h1>
-    <label>Email:</label>
-    <input type="text" id="login" placeholder="seu e-mail" size="38">
+    <h1><b>Q</b>zumba</h1>
+    <input type="text" id="login" placeholder="seu e-mail" size="30"><button type="button" id="cadastro" title="click se não tem cadastro e receberá um link de acesso no e-mail indicado.">novo</button>
+    <input type="password" id="password" placeholder="sua senha de acesso" size="25"><button type="button" id="go" title="click para autenticar e entrar.">login</button>
 
-    <label>Senha:</label>
-    <input type="password" id="password" placeholder="sua senha de acesso" size="30">
-    <label class="switch"><input type="checkbox" name="" value="" onclick="togglePass()">mostrar a senha</label>
+    <p class="links">
+        <img src="img/fb.png" title="autenticação usando o Facebook.">
+        <img src="img/gp.png" title="autenticação usando o Google Plus.">
+        <img src="img/gh.png" title="acesso aos códigos originais do projeto no GitHub.">
+        <span>Cadastre-se indicando seu e-mail e clicando no botão <b>"novo"</b> ou use uma conta social.</span>
+    </p>
 
-
-    <label>Chave de Segurança (de 20 a 40 caracteres) :</label>
-    <input type="text" id="irsa" size="49" placeholder="gerando..." disabled="true">
-    <i>Caracteres permitidos: /#$*%&!?@_+-=:.<>({[]})0-9, a-z, A-Z</i>
-
-    <p class="inline"><button type="button" id="newkey">Nova chave</button><button type="button" id="go">Enviar</button></p>
+    <input type="hidden" id="irsa" size="44" placeholder="gerando..." disabled="true">
+    <!-- Caracteres permitidos: /#$*%&!?@_+-=:.<>({[]})0-9, a-z, A-Z -->
 
     <hr>
-    <p>Use (click) estes e-mails para testar o login:</p>
+    <span>Use (click) estes e-mails para testar o login:</span>
     <ul class="help" id="help">
         <li>paulo.rocha@outlook.com</li>
         <li>abul@gmail.com</li>
         <li>zurox@outlook.com</li>
         <li>jeff_ss@gmail.com</li>
         <li>vini-nascimento@ymail.com</li>
+        <li>martachinela@gmail.com</li>
+        <li>armandinho24@gmagazine.com.br</li>
+        <li>maresal@yahoo.com.br</li>
     </ul>
-    <p>A senha é sempre "1234567890".</p>
-</div>
-
-<div id="zumbi" class="chat">
-    <div id="topctrl" class="topctrl">
-        <button id="goback">usuários</button>
-        <span id="text">Grupos</span>
-        <button id="gonext">mensagens</button>
-    </div>
-
-    <div id="page1" class="page toback">
-        <div id="userList"  class="grouplist"></div>
-    </div>
-
-    <div id="page2" class="page">
-        <div id="groups" class="grouplist"></div>
-    </div>
-
-    <div id="page3" class="page tonext">
-        <div id="chat" class="chatview">
-            <div class="xmsgc me">me<span class="xmsgi"></span><div class="xmsg">olá<span>2015-10-17 14:59:40 </span></div></div>
-        </div>
-    </div>
-
-    <div id="page4" class="page tonext">
-        <div id="fileList" class="fileList"></div>
-    </div>
-
-    <div class="message">
-        <textarea id="message" placeholder="your message here!"></textarea>
-        <button type="button" id="file">File</button>
-        <button type="button" id="send">></button>
-    </div>
 </div>

@@ -11,17 +11,17 @@ include 'model/relay.php';
 //configs ...
 $host = '0.0.0.0'; //host
 $port = '8080'; //port
-$owner = 1; // 1 = user id to test
+$title = "Xhat - zumbi";
 $null = NULL; //null var
 $bufLen = 16784; //buffer (recever/send) length
-$timerSet = ( 1 * 3 * 60 ); //em segundos = ( h * m * s )
+$timerSet = ( 1 * 60 ); //em segundos = ( h * m * s )
 $timer = time() + $timerSet; //start ...
 
 //Status ...
-$us_now = 1;
-$us_max = 1;
-$cha_now = 1;
-$cha_max = 1;
+$us_now = 0;
+$us_max = 0;
+$cha_now = 0;
+$cha_max = 0;
 
 //Command line settings...
 array_shift($argv);
@@ -29,7 +29,7 @@ foreach($argv as $a){
     if(strpos($a, '-h') !== false || strpos($a, '?') !== false) exit(help());
     if(strpos($a, '-a:') !== false) $host = substr($a, 3);
     if(strpos($a, '-p:') !== false) $port = substr($a, 3);
-    if(strpos($a, '-o:') !== false) $owner = substr($a, 3);
+    if(strpos($a, '-t:') !== false) $title = substr($a, 3);
     if(strpos($a, '-s') !== false) defined('SHOW') || define('SHOW', true);
     if(strpos($a, '-l') !== false) defined('LOG')  || define('LOG',  true);
 }
@@ -43,7 +43,7 @@ terminal("PHP CHAT RELAY\n\tCTRL+C for stop");
 
 //Initialize DB data Model
 $db = new Model\Relay($config['db']['mysql']);
-$db->initalize($owner, $host, $port);
+$db->initalize($title, $host, $port);
 
 //Create TCP/IP stream socket
 $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -217,29 +217,28 @@ while (true) {
             }
             break 2; //exit this sub-loop, only
         }
+
         $buf = '';
         $buf = @socket_read($changed_socket, null, PHP_NORMAL_READ); dp('changed socket: '.$changed_socket);
-        if ($buf === false) { // check disconnected client
+
+        if ($buf === false) { // client is off?
             // remove client for $clients array
             $found_socket = array_search($changed_socket, $clients); echo "\n\nDESCON:".$found_socket."\n\n";
-
-            //socket_getpeername($changed_socket, $ip); //IRRELEVANTE
-
-            //get user channel
-            $channel = $users[$found_socket]['channel'];
 
             //log
             terminal('DISCONNECTED', $users[$found_socket]);
 
+            //Apagando o usuário nmo DB
+            $db->deleteUser($users[$found_socket]['userid']);
+
+            //notify all users about disconnected connection
+            sendMessage(array('type' => 'out',
+                              'id'=>$users[$found_socket]['userid'],
+                              'message'=>''), null, $users[$found_socket]['channel']);
+
             //deleting this user
             unset($clients[$found_socket]);
             unset($users[$found_socket]);
-
-            //search for users in just room.
-            //$userList = searchUser('channel', $channel);
-
-            //notify all users about disconnected connection
-            sendMessage(array('type' => 'sinc', 'id'=>$found_socket, 'message'=>'out', 'users' =>''), null, $channel);
         }
     }
 
@@ -266,7 +265,7 @@ socket_close($socket);
 //Gravando o status de saida no DB
 $db->theUpdate($us_now, $us_max, $cha_now, $cha_max, true);
 
-//---------------------------------------------------------------------------------------------------------------- The FINISH!!
+//---------------------------------------------------------------------------------------------------- The FINISH!!
 
 
 
@@ -339,9 +338,7 @@ function perform_handshaking($receved_header, $client_conn, $host, $port) {
     $lines = preg_split("/\r\n/", $receved_header);
     foreach ($lines as $line) {
         $line = rtrim($line);
-        if (preg_match('/\A(\S+): (.*)\z/', $line, $matches)) {
-            $headers[$matches[1]] = $matches[2];
-        }
+        if (preg_match('/\A(\S+): (.*)\z/', $line, $matches)) $headers[$matches[1]] = $matches[2];
     }
 
     if(!isset($headers['Sec-WebSocket-Key'])) return false; //Não é um webSocket!?
@@ -349,12 +346,12 @@ function perform_handshaking($receved_header, $client_conn, $host, $port) {
     $secKey = $headers['Sec-WebSocket-Key'];
     $secAccept = base64_encode(pack('H*', sha1($secKey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
     //hand shaking header
-    $upgrade = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" .
-            "Upgrade: websocket\r\n" .
-            "Connection: Upgrade\r\n" .
-            "WebSocket-Origin: $host\r\n" .
-            "WebSocket-Location: ws://$host:$port\r\n" .
-            "Sec-WebSocket-Accept:$secAccept\r\n\r\n";
+    $upgrade =  "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" .
+                "Upgrade: websocket\r\n" .
+                "Connection: Upgrade\r\n" .
+                "WebSocket-Origin: $host\r\n" .
+                "WebSocket-Location: ws://$host:$port\r\n" .
+                "Sec-WebSocket-Accept:$secAccept\r\n\r\n";
     socket_write($client_conn, $upgrade, strlen($upgrade));
 
     return true;

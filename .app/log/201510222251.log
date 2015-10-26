@@ -1,0 +1,7 @@
+{"date":"151022225106","memory":299960,"mpeak":319016,"text":"CONNECTED","data":{"1":{"channel":"null"}}}
+{"date":"151022225106","memory":319544,"mpeak":342304,"text":"MESSAGE IN","data":{"type":"init","message":"","channel":1,"name":"Bill Rocha","userid":"1"}}
+{"date":"151022225106","memory":320224,"mpeak":343120,"text":"MESSAGE OUT","data":{"type":"init","id":1,"message":"","users":""}}
+{"date":"151022225120","memory":320472,"mpeak":344704,"text":"MESSAGE IN","data":{"type":"msg","message":"Teste","channel":15,"name":"Bill Rocha","userid":"1"}}
+{"date":"151022225120","memory":320928,"mpeak":344704,"text":"MESSAGE OUT","data":{"type":"msg","message":"Teste","channel":15,"name":"Bill Rocha","userid":"1"}}
+{"date":"151022225124","memory":302984,"mpeak":346032,"text":"DISCONNECTED","data":{"channel":15,"name":"Bill Rocha","userid":"1"}}
+{"date":"151022225124","memory":303008,"mpeak":346032,"text":"MESSAGE OUT","data":{"type":"sinc","id":1,"message":"out","users":""}}

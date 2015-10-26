@@ -4,7 +4,18 @@ namespace Model;
 use Lib\Q;
 
 
-class Zumbi {
+class Admin {
+
+    //Lista todos os 'relays' agrupado por nome (TITLE)
+    function getRelay(){
+        Q::db()->query('SELECT *
+                        FROM relay
+                        GROUP BY TITLE
+                        ORDER BY LAST_UPDATE');
+        return Q::db()->result();
+    }
+    // ------------------------------------------------------------------------------------------------------
+    // TODO ---- os metodos abaixo foram copiados - eliminar(?)
 
     function createUser($id, $name, $skey){
 
@@ -29,7 +40,7 @@ class Zumbi {
 
     //Pega os grupos habilitados para um determinado usuário
     function getUserGroupStatus($user){
-        /*
+
         Q::db()->query('SELECT  user_group.LASTMSG LASTMSG,
                                 user_group.LASTDATE,
                                 groups.ID GID,
@@ -44,8 +55,6 @@ class Zumbi {
                         AND   groups.ID = user_group.IDGROUP
                         ORDER BY groups.PAR desc
                         ', [':user'=>$user]);
-        */
-        Q::db()->query('SELECT * FROM view_group_by_user WHERE ID = :id', [':id'=>$user]);
         $ret = Q::db()->result();
         if($ret === false) return [];
 
@@ -120,9 +129,7 @@ class Zumbi {
 
     //get connected userlist
     function getUserList(){
-        //Q::db()->query('SELECT * FROM users');
-        //OR use a view
-        Q::db()->query('SELECT * FROM view_msg_from_users');
+        Q::db()->query('SELECT * FROM users');
 
         $rs = Q::db()->result();
         if($rs === false) return false;
@@ -132,8 +139,6 @@ class Zumbi {
             $o[$col->ID]['id'] = $col->ID;
             $o[$col->ID]['name'] = $col->NAME;
             $o[$col->ID]['last'] = $col->LAST;
-            $o[$col->ID]['total'] = $col->TOTAL;
-            $o[$col->ID]['type'] = $col->TYPE;
         }
         return $o;
     }

@@ -4,7 +4,7 @@ namespace Controller;
 use Model;
 use Lib;
 
-class Login extends Qcontroller {
+class User extends Qcontroller {
 
     function main(){
         $d = new Lib\Doc('login');

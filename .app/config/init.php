@@ -18,10 +18,10 @@ $config = [
                 'passw'=>'zumbi#123456'
                 ]
             ],
-    'router'=> ['default'       =>['ctrl'=>'login',     'method'=>'get'],
+    'router'=> ['default'       =>['ctrl'=>'user',      'method'=>'get'],
                 'msg'           =>['ctrl'=>'msg',       'method'=>'post'],
                 'sendmail'      =>['ctrl'=>'sendmail',  'method'=>'post'],
-                'login'         =>['ctrl'=>'login',     'method'=>'post'],
+                'user'         =>['ctrl'=>'user',       'method'=>'post'],
                 'upfile'        =>['ctrl'=>'upfile',    'method'=>'post']
         ]
     ];

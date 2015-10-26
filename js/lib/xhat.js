@@ -7,38 +7,59 @@ function startWs(){
     if (WS === null) {
 
         //WebSocket ----------------------------------------------------------------
+        _msg('Conectando em "'+wsUri+'" ....');
         WS = new WebSocket(wsUri);
 
         WS.onopen = function() {
-            WS.send(JSON.stringify({msg:AES.enc(JSON.stringify({type:'init',message:'', channel:1}), USER.key), id:USER.id}));
-            //SOUND.play('final');
+            _msg('Conectado ao <b>relay</b> com sucesso!');
+            WS.send(JSON.stringify(
+                {
+                    msg:AES.enc(JSON.stringify(
+                        {
+                            type:'init',
+                            message:'',
+                            channel:1
+                        }),
+                        USER.key),
+                    id:USER.id
+                }
+            ));
         };
 
         WS.onmessage = function(e) {
             var data = JSON.parse(AES.dec(e.data, USER.key));
-            MSG.show(data);
-        };
 
-        WS.onerror = function(e) {
-            var d = 'undefined' === typeof e.data ? 'undefined!' : e.data;
-            _msg('--- Error: ' + d + ' ---');
-            if(WS === null || WS.readyState !== WS.OPEN) {
-                console.log('ERROR');
-                exit();
+            if("undefined" !== typeof data.type && data.type == 'msg'){
+                SOUND.play('msgin');
+                painel('chat');
+                MSG.show(data);
             }
         };
 
+        WS.onerror = function(e) {
+            _msg('<b>Erro na conexão!<b><br>'+typeof e.data ? 'undefined!':e.data+' ...');
+        };
+
         WS.onclose = function() {
-            console.log('CLOSE');
+            _msg('Conexão <b>perdida</b>!<br>É necessário reiniciar.');
             exit();
         };
 
     } else {
-        WS.send(JSON.stringify({msg:AES.enc(JSON.stringify({type:'sync',message:'', channel:0}), USER.key), id:USER.id}));
+        WS.send(JSON.stringify(
+            {
+                msg:AES.enc(JSON.stringify(
+                    {
+                        type:'sync',
+                        message:'',
+                        channel:0
+                    }), USER.key),
+                id:USER.id
+            }));
     }
 };
 
-function sendMsg(e, type){ console.log(e); console.log(USER.channel)
+function sendMsg(e, type){
 
     if(WS === null || WS.readyState !== WS.OPEN) exit();
 
@@ -56,23 +77,46 @@ function sendMsg(e, type){ console.log(e); console.log(USER.channel)
     }
 
     //Send message
-    AES.size(256); console.log(JSON.stringify({msg:AES.enc(JSON.stringify({type:type,message:txt, channel:USER.channel}), USER.key), id:USER.id}));
-    WS.send(JSON.stringify({msg:AES.enc(JSON.stringify({type:type,message:txt, channel:USER.channel}), USER.key), id:USER.id}));
+    AES.size(256);
+    WS.send(JSON.stringify(
+        {
+            msg:AES.enc(JSON.stringify(
+                {
+                    type:type,
+                    message:txt,
+                    channel:USER.channel
+                }), USER.key),
+            id:USER.id
+        }));
 
     //Clear target
     _('message').value = '';
-    _('message').className = ' ';
+    _('message').style.display = 'none';
+
+    //show chat
+    painel('chat');
 }
 
-
-
+//Função de saída do sistema (logout)
 function exit(){
-    AES.size(256);
-    WS.send(JSON.stringify({msg:AES.enc(JSON.stringify({type:'out',message:'', channel:USER.channel}), USER.key), id:USER.id}));
     SOUND.play('final');
+
+    AES.size(256);
+    WS.send(JSON.stringify({
+        msg:AES.enc(
+            JSON.stringify(
+                {
+                    type:'out',
+                    message:'',
+                    channel:USER.channel
+                })
+            , USER.key)
+        , id:USER.id})
+    );
+
     WS.close();
+
     setTimeout(function() {
-        //document.location.href = document.location.href;
-        console.log('REINICIE')
-    }, 400);
+        document.location.href = document.location.href;
+    }, 2000);
 }

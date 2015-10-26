@@ -8,7 +8,7 @@ use Lib\Doc as Doc;
 
 class Msg extends Qcontroller {
 
-    function getMsgGroup(){
+    function getMsgByGroup(){
         $e = $this->_decodePostData();
         if($e === false) exit();
         //Send data

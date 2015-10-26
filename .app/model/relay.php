@@ -13,14 +13,14 @@ class Relay {
         $this->db = new Lib\Db($config);
     }
 
-    function initalize($owner, $host, $port){
+    function initalize($title, $host, $port){
 
         //DB insert
-        $this->db->query('INSERT INTO relay (PID,STATUS,SCRIPT,OWNER,IP,PORT,CHA_NOW,CHA_MAX,US_NOW,US_MAX,ERRORS,START,LAST_UPDATE)
-                                  VALUES (:pid,1,:script,:owner,:ip,:port,0,0,0,0,0,:st,:end)',
+        $this->db->query('INSERT INTO relay (PID,STATUS,SCRIPT,TITLE,IP,PORT,CHA_NOW,CHA_MAX,US_NOW,US_MAX,ERRORS,START,LAST_UPDATE)
+                                  VALUES (:pid,1,:script,:title,:ip,:port,0,0,0,0,0,:st,:end)',
                                   [':pid'=>getmypid(),
                                    ':script'=>__FILE__,
-                                   ':owner'=>$owner,
+                                   ':title'=>$title,
                                    ':ip'=>$host,
                                    ':port'=>$port,
                                    ':st'=>date('Y-m-d H:i:s'),
@@ -118,5 +118,19 @@ class Relay {
                                      ':tu'=>0,
                                      ':tp'=>$msg->type,
                                      ':ct'=>$msg->message]);
+    }
+
+    //Exclui um usuário
+    function deleteUser($id){
+        $this->db->query('DELETE FROM `users` WHERE ID = :id', [':id'=>$id]);
+        return $this->db->result();
+    }
+
+    //Sinaliza que o Relay foi desligado
+    function __destruct(){
+        $this->db->query('UPDATE relay
+                            SET LAST_UPDATE = :lud, STATUS = 0
+                            WHERE ID = :id',
+                            [':lud'=>date('Y-m-d H:i:s'),':id'=>$this->id]);
     }
 }
